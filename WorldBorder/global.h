@@ -18,6 +18,8 @@ struct Settings {
   long long minZ = 30000;
   long long maxZ = 30000;
 
+  int informBefore = 10;
+
   std::string messageBorder = "You've reached world border!";
   std::string messageBorderApproach = "You will reach border at %coord% pos in %number% blocks!";
 
@@ -25,7 +27,8 @@ struct Settings {
   template <typename IO> static inline bool io(IO f, Settings &settings, YAML::Node &node) {
     return f(settings.minX, node["minX"]) && f(settings.minZ, node["minZ"]) && f(settings.maxX, node["maxX"]) &&
            f(settings.maxZ, node["maxZ"]) && f(settings.messageBorder, node["reachBorderMessage"]) &&
-           f(settings.messageBorderApproach, node["messageBorderApproach"]);
+           f(settings.messageBorderApproach, node["messageBorderApproach"]) &&
+           f(settings.informBefore, node["informBefore"]);
   }
 };
 

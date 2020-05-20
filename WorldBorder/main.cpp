@@ -46,13 +46,13 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
       teleport(thi, prevPos.x, prevPos.y, prevPos.z + 1);
     }
     
-    if (std::fabs(settings.maxX - currPos.x) <= 10) {
+    if (std::fabs(settings.maxX - currPos.x) <= settings.informBefore+1) {
       reachMsg(thi, "X", std::fabs(settings.maxX - currPos.x));
-    } else if (std::fabs(settings.minX - currPos.x) <= 10) {
+    } else if (std::fabs(settings.minX - currPos.x) <= settings.informBefore+1) {
       reachMsg(thi, "X", std::fabs(settings.minX - currPos.x));
-    } else if (std::fabs(settings.maxZ - currPos.z) <= 10) {
+    } else if (std::fabs(settings.maxZ - currPos.z) <= settings.informBefore+1) {
       reachMsg(thi, "Z", std::fabs(settings.maxZ - currPos.z));
-    } else if (std::fabs(settings.minZ - currPos.z) <= 10) {
+    } else if (std::fabs(settings.minZ - currPos.z) <= settings.informBefore+1) {
       reachMsg(thi, "Z", std::fabs(settings.minZ - currPos.z));
     }
   }
