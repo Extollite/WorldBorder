@@ -21,17 +21,19 @@ void PostInit() {}
 void teleport(Player& thi, float x, float y, float z) {
   Vec3 teleportTo;
   teleportTo.x = x;
-  teleportTo.y = y - 0.9;
+  teleportTo.y = y - 1.62;
   teleportTo.z = z;
-  thi.teleport(teleportTo, {0}, thi.getDimensionId());
+  Vec3 oldPos = thi.getPos();
+  oldPos.y     = oldPos.y - 1.62;
+  thi.teleport(teleportTo, oldPos, thi.getDimensionId());
   auto pk = TextPacket::createTextPacket<TextPacketType::JukeboxPopup>(settings.messageBorder);
   thi.sendNetworkPacket(pk);
 }
 
-void reachMsg(Player& thi, std::string pos, float number) {
+void reachMsg(Player& thi, std::string pos, int number) {
   std::string out(settings.messageBorderApproach);
   boost::replace_all(out, "%coord%", pos);
-  boost::replace_all(out, "%number%", std::to_string((int) (number)));
+  boost::replace_all(out, "%number%", std::to_string(number));
   auto pk = TextPacket::createTextPacket<TextPacketType::JukeboxPopup>(out);
   thi.sendNetworkPacket(pk);
 }
@@ -41,6 +43,7 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
   Vec3 prevPos = thi.getPos();
   void *ret    = original(thi, newPos);
   Vec3 currPos = thi.getPos();
+  if (currPos == prevPos) return ret;
   if (std::fabs(currPos.x - prevPos.x) >= 0.00001 ||
       std::fabs(currPos.z - prevPos.z) >= 0.00001) {
     WorldBorder border = borders[thi.getDimensionId().value];
@@ -57,7 +60,7 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
       min   = std::fabs(border.minZ - currPos.z);
       coord = "Z";
     }
-    if (min <= settings.informBefore + 1)
+    if (((int) min) > 0 && ((int) min) <= settings.informBefore + 1)
         reachMsg(thi, coord, min);
 
     if (currPos.x >= border.maxX) {
