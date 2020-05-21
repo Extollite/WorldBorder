@@ -44,16 +44,6 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
   if (std::fabs(currPos.x - prevPos.x) >= 0.00001 ||
       std::fabs(currPos.z - prevPos.z) >= 0.00001) {
     WorldBorder border = borders[thi.getDimensionId().value];
-    if (currPos.x >= border.maxX) {
-      teleport(thi, prevPos.x - 1, prevPos.y, prevPos.z);
-    } else if (currPos.x <= border.minX) {
-      teleport(thi, prevPos.x + 1, prevPos.y, prevPos.z);
-    } else if (currPos.z >= border.maxZ) {
-      teleport(thi, prevPos.x, prevPos.y, prevPos.z - 1);
-    } else if (currPos.z <= border.minZ) {
-      teleport(thi, prevPos.x, prevPos.y, prevPos.z + 1);
-    }
-    
     std::string coord = "X";
     float min         = std::fabs(border.maxX - currPos.x);
     if (std::fabs(border.minX - currPos.x) < min) {
@@ -69,6 +59,16 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
     }
     if (min <= settings.informBefore + 1)
         reachMsg(thi, coord, min);
+
+    if (currPos.x >= border.maxX) {
+      teleport(thi, prevPos.x - 1, prevPos.y, prevPos.z);
+    } else if (currPos.x <= border.minX) {
+      teleport(thi, prevPos.x + 1, prevPos.y, prevPos.z);
+    } else if (currPos.z >= border.maxZ) {
+      teleport(thi, prevPos.x, prevPos.y, prevPos.z - 1);
+    } else if (currPos.z <= border.minZ) {
+      teleport(thi, prevPos.x, prevPos.y, prevPos.z + 1);
+    }
   }
   return ret;
 }
