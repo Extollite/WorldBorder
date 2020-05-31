@@ -64,13 +64,13 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
         reachMsg(thi, coord, min);
 
     if (currPos.x >= border.maxX) {
-      teleport(thi, prevPos.x - 1, prevPos.y, prevPos.z);
+      teleport(thi, prevPos.x - 5, prevPos.y, prevPos.z);
     } else if (currPos.x <= border.minX) {
-      teleport(thi, prevPos.x + 1, prevPos.y, prevPos.z);
+      teleport(thi, prevPos.x + 5, prevPos.y, prevPos.z);
     } else if (currPos.z >= border.maxZ) {
-      teleport(thi, prevPos.x, prevPos.y, prevPos.z - 1);
+      teleport(thi, prevPos.x, prevPos.y, prevPos.z - 5);
     } else if (currPos.z <= border.minZ) {
-      teleport(thi, prevPos.x, prevPos.y, prevPos.z + 1);
+      teleport(thi, prevPos.x, prevPos.y, prevPos.z + 5);
     }
   }
   return ret;
