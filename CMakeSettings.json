@@ -13,7 +13,7 @@
             "variables": [
                 {
                     "name": "VCPKG_TARGET_TRIPLET",
-                    "value": "x64-windows-rel",
+                    "value": "elementzero",
                     "type": "STRING"
                 }
             ]
