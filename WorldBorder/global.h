@@ -3,12 +3,13 @@
 #include <yaml.h>
 #include <string>
 #include <map>
-#include <log.h>
-#include "playerdb.h"
+#include <base/log.h>
+#include "base/playerdb.h"
 #include <Actor/Actor.h>
 #include <Actor/Player.h>
 #include <Packet/TextPacket.h>
 #include <boost/algorithm/string/replace.hpp>
+#include <exception>
 
 struct WorldBorder {
   long long minX = -30000;

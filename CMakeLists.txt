@@ -6,14 +6,17 @@ project ("WBDLSample")
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_EXTENSIONS ON)
+set (VCPKG_TARGET_TRIPLET "elementzero")
 add_definitions (-DWIN32_LEAN_AND_MEAN=1)
 
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "x${CMAKE_CXX_SIMULATE_ID}" STREQUAL "xMSVC")
-    add_compile_options (-Wno-c++2a-extensions -Wno-invalid-offsetof -Wno-deprecated-declarations)
-endif ()
+add_compile_options (
+    -Wno-microsoft-enum-forward-reference
+    -Wno-c++2a-extensions
+    -Wno-invalid-offsetof
+    -Wno-deprecated-declarations
+    -Wno-gnu-string-literal-operator-template)
 add_compile_options (/EHsc /utf-8)
-add_definitions (-DWIN32_LEAN_AND_MEAN=1)
-
+add_definitions (-DWIN32_LEAN_AND_MEAN=1 -DNOMINMAX -D_WIN32_WINNT=0x0A00)
 # Override it in CMakeSettings.json or command line option
 set (MOD_SDK_PATH D:/eZTest)
 

@@ -10,27 +10,26 @@ void dllexit() {}
 
 std::unordered_map<int, WorldBorder> borders;
 
-void PreInit() { borders[0] = settings.overworld;
+void PreInit() {
+  borders[0] = settings.overworld;
   borders[1] = settings.nether;
-  borders[2]               = settings.end;
+  borders[2] = settings.end;
 }
 void PostInit() {}
 
-
-
-void teleport(Player& thi, float x, float y, float z) {
+void teleport(Player &thi, float x, float y, float z) {
   Vec3 teleportTo;
   teleportTo.x = x;
   teleportTo.y = y - 1.62;
   teleportTo.z = z;
-  Vec3 oldPos = thi.getPos();
+  Vec3 oldPos  = thi.getPos();
   oldPos.y     = oldPos.y - 1.62;
   thi.teleport(teleportTo, oldPos, thi.getDimensionId());
   auto pk = TextPacket::createTextPacket<TextPacketType::JukeboxPopup>(settings.messageBorder);
   thi.sendNetworkPacket(pk);
 }
 
-void reachMsg(Player& thi, std::string pos, int number) {
+void reachMsg(Player &thi, std::string pos, int number) {
   std::string out(settings.messageBorderApproach);
   boost::replace_all(out, "%coord%", pos);
   boost::replace_all(out, "%number%", std::to_string(number));
@@ -42,47 +41,49 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
   if (thi.getCommandPermissionLevel() > CommandPermissionLevel::Any) return original(thi, newPos);
   Vec3 prevPos = thi.getPos();
   void *ret    = original(thi, newPos);
-  Vec3 currPos = thi.getPos();
-  if (currPos == prevPos) return ret;
-  if (std::fabs(currPos.x - prevPos.x) >= 0.00001 ||
-      std::fabs(currPos.z - prevPos.z) >= 0.00001) {
-    WorldBorder border = borders[thi.getDimensionId().value];
-    std::string coord = "X";
-    float min         = std::fabs(border.maxX - currPos.x);
-    if (std::fabs(border.minX - currPos.x) < min) {
-      min = std::fabs(border.minX - currPos.x);
-    }
-    if (std::fabs(border.maxZ - currPos.z) < min) {
-      min = std::fabs(border.maxZ - currPos.z);
-      coord = "Z";
-    }
-    if (std::fabs(border.minZ - currPos.z) < min) {
-      min   = std::fabs(border.minZ - currPos.z);
-      coord = "Z";
-    }
-    if (((int) min) > 0 && ((int) min) <= settings.informBefore + 1)
-        reachMsg(thi, coord, min);
+  try {
+    Vec3 currPos = thi.getPos();
+    if (currPos == prevPos) return ret;
+    if (std::fabs(currPos.x - prevPos.x) >= 0.00001 || std::fabs(currPos.z - prevPos.z) >= 0.00001) {
+      WorldBorder border = borders[thi.getDimensionId().value];
+      std::string coord  = "X";
+      float min          = std::fabs(border.maxX - currPos.x);
+      if (std::fabs(border.minX - currPos.x) < min) { min = std::fabs(border.minX - currPos.x); }
+      if (std::fabs(border.maxZ - currPos.z) < min) {
+        min   = std::fabs(border.maxZ - currPos.z);
+        coord = "Z";
+      }
+      if (std::fabs(border.minZ - currPos.z) < min) {
+        min   = std::fabs(border.minZ - currPos.z);
+        coord = "Z";
+      }
+      if (((int) min) > 0 && ((int) min) <= settings.informBefore + 1) reachMsg(thi, coord, min);
 
-    if (currPos.x >= border.maxX) {
-      teleport(thi, prevPos.x - 5, prevPos.y, prevPos.z);
-    } else if (currPos.x <= border.minX) {
-      teleport(thi, prevPos.x + 5, prevPos.y, prevPos.z);
-    } else if (currPos.z >= border.maxZ) {
-      teleport(thi, prevPos.x, prevPos.y, prevPos.z - 5);
-    } else if (currPos.z <= border.minZ) {
-      teleport(thi, prevPos.x, prevPos.y, prevPos.z + 5);
+      if (currPos.x >= border.maxX) {
+        teleport(thi, prevPos.x - 5, prevPos.y, prevPos.z);
+      } else if (currPos.x <= border.minX) {
+        teleport(thi, prevPos.x + 5, prevPos.y, prevPos.z);
+      } else if (currPos.z >= border.maxZ) {
+        teleport(thi, prevPos.x, prevPos.y, prevPos.z - 5);
+      } else if (currPos.z <= border.minZ) {
+        teleport(thi, prevPos.x, prevPos.y, prevPos.z + 5);
+      }
     }
+  } catch (std::exception ex) {
+    // ignore
   }
   return ret;
 }
 
-THook(bool, "?teleportTo@Player@@UEAAXAEBVVec3@@_NHH@Z", Player &thi, Vec3 const & pos, bool b1, int i1, int i2) {
-  if (thi.getCommandPermissionLevel() > CommandPermissionLevel::Any) return original(thi, pos, b1, i1, i2);
-  Vec3 prevPos = thi.getPos();
+THook(
+    void *, "?teleportTo@Player@@UEAAXAEBVVec3@@_NHHAEBUActorUniqueID@@@Z", Player &thi, Vec3 const &pos, bool b1,
+    int i1, int i2, const ActorUniqueID * acuid) {
+  if (thi.getCommandPermissionLevel() > CommandPermissionLevel::Any) return original(thi, pos, b1, i1, i2, acuid);
+  Vec3 prevPos       = thi.getPos();
   WorldBorder border = borders[thi.getDimensionId().value];
   if (pos.x >= border.maxX || pos.x <= border.minX || pos.z >= border.maxZ || pos.z <= border.minZ) {
     teleport(thi, prevPos.x, prevPos.y, prevPos.z);
-    return false;
+    return nullptr;
   }
-  return original(thi, pos, b1, i1, i2);
+  return original(thi, pos, b1, i1, i2, acuid);
 }
