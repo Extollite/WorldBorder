@@ -59,14 +59,40 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
       }
       if (((int) min) > 0 && ((int) min) <= settings.informBefore + 1) reachMsg(thi, coord, min);
 
+      bool toSpawn = false;
+
       if (currPos.x >= border.maxX) {
-        teleport(thi, prevPos.x - 5, prevPos.y, prevPos.z);
+        if (currPos.x - border.maxX > 3) {
+          toSpawn = true;
+        } else
+          teleport(thi, prevPos.x - 5, prevPos.y, prevPos.z);
       } else if (currPos.x <= border.minX) {
-        teleport(thi, prevPos.x + 5, prevPos.y, prevPos.z);
+        if (border.minX - currPos.x > 3) {
+          toSpawn = true;
+        } else
+          teleport(thi, prevPos.x + 5, prevPos.y, prevPos.z);
       } else if (currPos.z >= border.maxZ) {
-        teleport(thi, prevPos.x, prevPos.y, prevPos.z - 5);
+        if (currPos.z - border.maxZ > 3) {
+          toSpawn = true;
+        } else
+          teleport(thi, prevPos.x, prevPos.y, prevPos.z - 5);
       } else if (currPos.z <= border.minZ) {
+        if (border.minZ - currPos.z > 3) {
+          toSpawn = true;
+        } else
         teleport(thi, prevPos.x, prevPos.y, prevPos.z + 5);
+      }
+      if (toSpawn) { 
+          auto &level = LocateService<Level>()->GetLevelDataWrapper();
+        if (level->mHasSpawnPos) {
+            auto pos = level->SpawnPos;
+            if (pos.y <= 256) { 
+                teleport(thi, pos.x, pos.y + 1.62, pos.z);
+                return ret;
+            }
+        }
+        auto pos = thi.getSpawnPosition();
+        teleport(thi, pos.x, pos.y, pos.z);
       }
     }
   } catch (std::exception ex) {
@@ -77,7 +103,7 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
 
 THook(
     void *, "?teleportTo@Player@@UEAAXAEBVVec3@@_NHHAEBUActorUniqueID@@@Z", Player &thi, Vec3 const &pos, bool b1,
-    int i1, int i2, const ActorUniqueID * acuid) {
+    int i1, int i2, const ActorUniqueID *acuid) {
   if (thi.getCommandPermissionLevel() > CommandPermissionLevel::Any) return original(thi, pos, b1, i1, i2, acuid);
   Vec3 prevPos       = thi.getPos();
   WorldBorder border = borders[thi.getDimensionId().value];

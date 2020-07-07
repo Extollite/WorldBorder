@@ -10,6 +10,8 @@
 #include <Packet/TextPacket.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <exception>
+#include <Block/BlockSource.h>
+#include <Block/Block.h>
 
 struct WorldBorder {
   long long minX = -30000;
