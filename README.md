@@ -1,6 +1,7 @@
 # WorldBorder
 
 World border mod for [ElementZero](https://github.com/Element-0/ElementZero).<br><br>
+You need to set global world spawn with /setworldspawn command.
 
 Config
 -------------
