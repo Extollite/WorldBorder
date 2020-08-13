@@ -18,7 +18,7 @@ add_compile_options (
 add_compile_options (/EHsc /utf-8)
 add_definitions (-DWIN32_LEAN_AND_MEAN=1 -DNOMINMAX -D_WIN32_WINNT=0x0A00)
 # Override it in CMakeSettings.json or command line option
-set (MOD_SDK_PATH D:/eZTest)
+set (MOD_SDK_PATH F:/eZTest)
 
 include_directories (${MOD_SDK_PATH}/Include ${MOD_SDK_PATH}/Include)
 link_directories (${MOD_SDK_PATH}/Lib)
