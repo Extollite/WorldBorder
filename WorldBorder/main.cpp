@@ -37,15 +37,16 @@ void reachMsg(Player &thi, std::string pos, int number) {
   thi.sendNetworkPacket(pk);
 }
 
-THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos) {
-  if (thi.getCommandPermissionLevel() > CommandPermissionLevel::Any) return original(thi, newPos);
-  Vec3 prevPos = thi.getPos();
-  void *ret    = original(thi, newPos);
-  try {
-    Vec3 currPos = thi.getPos();
+std::unordered_map<Player *, Vec3> prevPosition;
+
+THook(void *, "?tickWorld@Player@@UEAAHAEBUTick@@@Z", Player *thi, struct Tick const &a) { 
+    if (thi->getCommandPermissionLevel() > CommandPermissionLevel::Any) return original(thi, a);
+    void* ret = original(thi, a); 
+    Vec3 prevPos = prevPosition[thi];
+    Vec3 currPos = thi->getPos();
     if (currPos == prevPos) return ret;
     if (std::fabs(currPos.x - prevPos.x) >= 0.00001 || std::fabs(currPos.z - prevPos.z) >= 0.00001) {
-      WorldBorder border = borders[thi.getDimensionId().value];
+      WorldBorder border = borders[thi->getDimensionId().value];
       std::string coord  = "X";
       float min          = std::fabs(border.maxX - currPos.x);
       if (std::fabs(border.minX - currPos.x) < min) { min = std::fabs(border.minX - currPos.x); }
@@ -57,7 +58,7 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
         min   = std::fabs(border.minZ - currPos.z);
         coord = "Z";
       }
-      if (((int) min) > 0 && ((int) min) <= settings.informBefore + 1) reachMsg(thi, coord, min);
+      if (((int) min) > 0 && ((int) min) <= settings.informBefore + 1) reachMsg(*thi, coord, min);
 
       bool toSpawn = false;
 
@@ -65,40 +66,38 @@ THook(void *, "?move@Player@@UEAAXAEBVVec3@@@Z", Player &thi, Vec3 const &newPos
         if (currPos.x - border.maxX > 3) {
           toSpawn = true;
         } else
-          teleport(thi, prevPos.x - 5, prevPos.y, prevPos.z);
+          teleport(*thi, prevPos.x - 5, prevPos.y, prevPos.z);
       } else if (currPos.x <= border.minX) {
         if (border.minX - currPos.x > 3) {
           toSpawn = true;
         } else
-          teleport(thi, prevPos.x + 5, prevPos.y, prevPos.z);
+          teleport(*thi, prevPos.x + 5, prevPos.y, prevPos.z);
       } else if (currPos.z >= border.maxZ) {
         if (currPos.z - border.maxZ > 3) {
           toSpawn = true;
         } else
-          teleport(thi, prevPos.x, prevPos.y, prevPos.z - 5);
+          teleport(*thi, prevPos.x, prevPos.y, prevPos.z - 5);
       } else if (currPos.z <= border.minZ) {
         if (border.minZ - currPos.z > 3) {
           toSpawn = true;
         } else
-        teleport(thi, prevPos.x, prevPos.y, prevPos.z + 5);
+          teleport(*thi, prevPos.x, prevPos.y, prevPos.z + 5);
       }
-      if (toSpawn) { 
-          auto &level = LocateService<Level>()->GetLevelDataWrapper();
+      if (toSpawn) {
+        auto &level = LocateService<Level>()->GetLevelDataWrapper();
         if (level->mHasSpawnPos) {
-            auto pos = level->SpawnPos;
-            if (pos.y <= 256) { 
-                teleport(thi, pos.x, pos.y + 1.62, pos.z);
-                return ret;
-            }
+          auto pos = level->SpawnPos;
+          if (pos.y <= 256) {
+            teleport(*thi, pos.x, pos.y + 1.62, pos.z);
+            return ret;
+          }
         }
-        auto pos = thi.getSpawnPosition();
-        teleport(thi, pos.x, pos.y, pos.z);
+        auto pos = thi->getSpawnPosition();
+        teleport(*thi, pos.x, pos.y, pos.z);
       }
     }
-  } catch (std::exception ex) {
-    // ignore
-  }
-  return ret;
+    prevPosition[thi] = thi->getPos();
+    return ret;
 }
 
 THook(
